@@ -127,6 +127,7 @@ type RunConfig struct {
 	skipFirst   int
 	countErrors bool
 	recvMsgFunc StreamRecvMsgInterceptFunc
+	withReport  bool
 }
 
 // Option controls some aspect of run
@@ -145,6 +146,7 @@ func NewConfig(call, host string, options ...Option) (*RunConfig, error) {
 		cpus:         runtime.GOMAXPROCS(-1),
 		zstop:        "close",
 		loadSchedule: ScheduleConst,
+		withReport:   true,
 	}
 
 	// apply options
@@ -1026,6 +1028,16 @@ func WithMetadataProvider(fn MetadataProviderFunc) Option {
 func WithStreamMessageProvider(fn StreamMessageProviderFunc) Option {
 	return func(o *RunConfig) error {
 		o.dataStreamFunc = fn
+
+		return nil
+	}
+}
+
+// WithoutReport Specificies if report should be generated
+//	WithReport(true)
+func WithReport(withReport bool) Option {
+	return func(o *RunConfig) error {
+		o.withReport = withReport
 
 		return nil
 	}

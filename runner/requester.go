@@ -167,12 +167,16 @@ func (b *Requester) Run() (*Report, error) {
 		b.stubs = append(b.stubs, stub)
 	}
 
-	b.reporter = newReporter(b.results, b.config)
+	if b.config.withReport {
+		b.reporter = newReporter(b.results, b.config)
+	}
 	b.lock.Unlock()
 
-	go func() {
-		b.reporter.Run()
-	}()
+	if b.config.withReport {
+		go func() {
+			b.reporter.Run()
+		}()
+	}
 
 	wt := createWorkerTicker(b.config)
 
@@ -213,6 +217,14 @@ func (b *Requester) Stop(reason StopReason) {
 // Finish finishes the test run
 func (b *Requester) Finish() *Report {
 	close(b.results)
+
+	if !b.config.withReport {
+		if b.config.hasLog {
+			b.config.log.Debug("Skipping report")
+		}
+		return nil
+	}
+
 	total := time.Since(b.start)
 
 	if b.config.hasLog {
